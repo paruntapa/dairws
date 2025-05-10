@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  placeId       String?
+  place         Place[]
+}
+
+model Validator {
+  id              String   @id @default(uuid())
+  walletAddress   String   @unique
+  pendingPayouts  Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Place {
+  id                String   @id @default(uuid())
+  userId            String
+  placeName         String   
+  latitude          Float
+  longitude         Float
+  disabled          Boolean @default(false)
+  validatedByWallet String?
+  validatorFetching Boolean @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  airQualityId      String?
+  airQuality        AirQuality? @relation(fields: [airQualityId], references: [id])
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+model AirQuality {
+  id          String   @id @default(uuid())
+  placeId     String
+  place       Place[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  status      AirStatus
+  aqi         Int
+  pm25        Float
+  no          Float
+  o3          Float
+  nh3         Float
+  pm10        Float
+  co          Float
+  so2         Float
+  no2         Float
+}
+
+enum AirStatus {
+  GOOD
+  MODERATE
+  UNHEALTHY
+  VERY_UNHEALTHY
+  SEVERE
+}
